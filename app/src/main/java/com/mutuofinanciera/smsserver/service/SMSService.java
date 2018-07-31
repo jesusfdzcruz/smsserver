@@ -4,6 +4,7 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
 import android.telephony.SmsManager;
+import android.util.Log;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -14,6 +15,8 @@ import java.net.Socket;
 
 
 public class SMSService extends Service {
+
+    public static final String TAG = "SMSSERVICE";
 
     public static final int PORT = 3512;
     public static final String SMS_BODY_TAG = "sms_body";
@@ -28,6 +31,8 @@ public class SMSService extends Service {
     private Thread mThread;
 
     public SMSService() {
+        Log.v(TAG, "Constructor");
+
         mSMSCounter = 0;
 
         run = true;
@@ -42,9 +47,11 @@ public class SMSService extends Service {
     }
 
     private void readMessage() {
+        Log.v(TAG, "waiting for socket");
         Socket client = acceptClient();
 
         if (client != null) {
+            Log.v(TAG, "Client found");
             sendData(client, mSMSCounter);
 
             String number = receiveData(client);
@@ -115,6 +122,7 @@ public class SMSService extends Service {
 
     @Override
     public IBinder onBind(Intent intent) {
+        Log.v(TAG, "Bind called it");
         return null;
     }
 
@@ -129,6 +137,7 @@ public class SMSService extends Service {
 
     @Override
     public void onDestroy() {
+        Log.v(TAG, "Stop server");
         super.onDestroy();
 
         stopServer();

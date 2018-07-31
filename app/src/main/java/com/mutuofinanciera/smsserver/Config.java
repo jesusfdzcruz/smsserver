@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -12,6 +13,8 @@ import android.view.View;
 import com.mutuofinanciera.smsserver.service.SMSService;
 
 public class Config extends AppCompatActivity {
+    private String TAG = "CONFIG";
+
 
     private SMSService smsService;
 
@@ -26,6 +29,8 @@ public class Config extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
+                Log.v(TAG, "Starting server");
                 Intent intent = new Intent(Config.this, SMSService.class);
 
                 Config.this.startService(intent);
