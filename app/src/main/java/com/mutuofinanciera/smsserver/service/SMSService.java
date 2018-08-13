@@ -7,6 +7,7 @@ import android.telephony.SmsManager;
 import android.util.Log;
 
 import java.io.BufferedReader;
+import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
@@ -19,8 +20,6 @@ public class SMSService extends Service {
     public static final String TAG = "SMSSERVICE";
 
     public static final int PORT = 3512;
-    public static final String SMS_BODY_TAG = "sms_body";
-    public static final String SMS_URI_FORMAT = "smsto: %s";
 
     private boolean run;
 
@@ -52,22 +51,64 @@ public class SMSService extends Service {
 
         if (client != null) {
             Log.v(TAG, "Client found");
-            sendData(client, mSMSCounter);
 
-            String number = receiveData(client);
-            String message = receiveData(client);
-
-            sendMessage(number, message);
+            executeCommand(client, receiveInteger(client));
         }
 
         closeClient(client);
     }
 
+    private void executeCommand(Socket client, int command){
+
+        switch (command){
+            case CommandConstants.COMMAND_SET_COUNTER:
+                setMessageCounter(client);
+                break;
+            case CommandConstants.COMMAND_SEND_MESSAGE:
+                sendMessage(client);
+                break;
+            case CommandConstants.COMMAND_SEND_MESSAGE_COUNTER:
+                sendCounter(client, mSMSCounter);
+                break;
+            default:
+        }
+    }
+
+    private void sendCounter(Socket client, int counter) {
+        sendData(client, counter);
+    }
+
+    private void sendMessage(Socket client){
+        String number = receiveData(client);
+        String message = receiveData(client);
+
+        sendMessage(number, message);
+    }
+
+    private void setMessageCounter(Socket client) {
+        mSMSCounter = receiveInteger(client);
+    }
+
+    private int receiveInteger(Socket client) {
+        int result = 0;
+        try {
+            DataInputStream inputStream = new DataInputStream (client.getInputStream());
+            result = inputStream.readInt();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return result;
+    }
+
     private String receiveData(Socket client) {
         String result = "";
+        int i;
         try {
             BufferedReader inputStream = new BufferedReader(new InputStreamReader(client.getInputStream()));
             result = inputStream.readLine();
+            for(i=0; i != 1000; i++)
+                System.out.println(i);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -78,7 +119,8 @@ public class SMSService extends Service {
     private void closeClient(Socket client) {
         try {
 
-            client.close();
+            if(client != null)
+                client.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
