@@ -6,10 +6,8 @@ import android.os.IBinder;
 import android.telephony.SmsManager;
 import android.util.Log;
 
-import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -39,61 +37,60 @@ public class SMSService extends Service {
         mThread = new Thread(new Runnable() {
             public void run() {
                 while (run) {
-                    readMessage();
+                    mainTask();
                 }
             }
         });
     }
 
-    private void readMessage() {
+    private void mainTask() {
         Log.v(TAG, "waiting for socket");
-        Socket client = acceptClient();
 
-        if (client != null) {
-            Log.v(TAG, "Client found");
+        executeCommand(receiveInteger());
 
-            executeCommand(client, receiveInteger(client));
-        }
 
-        closeClient(client);
     }
 
-    private void executeCommand(Socket client, int command){
+    private void executeCommand(int command) {
 
         switch (command){
             case CommandConstants.COMMAND_SET_COUNTER:
-                setMessageCounter(client);
+                setMessageCounter();
                 break;
             case CommandConstants.COMMAND_SEND_MESSAGE:
-                sendMessage(client);
+                sendMessage();
                 break;
             case CommandConstants.COMMAND_SEND_MESSAGE_COUNTER:
-                sendCounter(client, mSMSCounter);
+                sendCounter(mSMSCounter);
                 break;
             default:
         }
     }
 
-    private void sendCounter(Socket client, int counter) {
-        sendData(client, counter);
+    private void sendCounter(int counter) {
+        sendData(counter);
     }
 
-    private void sendMessage(Socket client){
-        String number = receiveData(client);
-        String message = receiveData(client);
+    private void sendMessage() {
+        String number = receiveData();
+        String message = receiveData();
 
         sendMessage(number, message);
     }
 
-    private void setMessageCounter(Socket client) {
-        mSMSCounter = receiveInteger(client);
+    private void setMessageCounter() {
+        mSMSCounter = receiveInteger();
     }
 
-    private int receiveInteger(Socket client) {
-        int result = 0;
+    private int receiveInteger() {
+        int result = -1;
         try {
+            Socket client = acceptClient();
+
             DataInputStream inputStream = new DataInputStream (client.getInputStream());
             result = inputStream.readInt();
+
+            closeClient(client);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -101,14 +98,15 @@ public class SMSService extends Service {
         return result;
     }
 
-    private String receiveData(Socket client) {
-        String result = "";
-        int i;
+    private String receiveData() {
+        String result = null;
         try {
-            BufferedReader inputStream = new BufferedReader(new InputStreamReader(client.getInputStream()));
-            result = inputStream.readLine();
-            for(i=0; i != 1000; i++)
-                System.out.println(i);
+            Socket client = acceptClient();
+
+            DataInputStream inputStream = new DataInputStream(client.getInputStream());
+            result = inputStream.readUTF();
+
+            closeClient(client);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -126,24 +124,30 @@ public class SMSService extends Service {
         }
     }
 
-    private void sendData(Socket client, int data) {
+    private void sendData(int data) {
         PrintStream outputStream;
         try {
+            Socket client = acceptClient();
 
             outputStream = new PrintStream(client.getOutputStream());
             outputStream.println(data);
+
+            closeClient(client);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
 
-    private void sendData(Socket client, String data) {
+    private void sendData(String data) {
         PrintStream outputStream;
         try {
+            Socket client = acceptClient();
 
             outputStream = new PrintStream(client.getOutputStream());
             outputStream.println(data);
+
+            closeClient(client);
         } catch (IOException e) {
             e.printStackTrace();
         }
