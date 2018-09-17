@@ -47,8 +47,6 @@ public class SMSService extends Service {
         Log.v(TAG, "waiting for socket");
 
         executeCommand(receiveInteger());
-
-
     }
 
     private void executeCommand(int command) {
@@ -84,6 +82,7 @@ public class SMSService extends Service {
 
     private int receiveInteger() {
         int result = -1;
+
         try {
             Socket client = acceptClient();
 
@@ -91,7 +90,7 @@ public class SMSService extends Service {
             result = inputStream.readInt();
 
             closeClient(client);
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
@@ -107,7 +106,7 @@ public class SMSService extends Service {
             result = inputStream.readUTF();
 
             closeClient(client);
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
@@ -148,7 +147,7 @@ public class SMSService extends Service {
             outputStream.println(data);
 
             closeClient(client);
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -159,7 +158,7 @@ public class SMSService extends Service {
         try {
 
             client = mSocketServer.accept();
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
 

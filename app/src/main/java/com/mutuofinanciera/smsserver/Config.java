@@ -9,6 +9,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.TextView;
 
 import com.mutuofinanciera.smsserver.service.SMSService;
 
@@ -17,6 +18,7 @@ public class Config extends AppCompatActivity {
 
 
     private SMSService smsService;
+    private TextView mContentText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -25,12 +27,16 @@ public class Config extends AppCompatActivity {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        mContentText = findViewById(R.id.config_content_text_label);
+
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
-                Log.v(TAG, "Starting server");
+
+                Log.v(TAG, String.valueOf(R.string.server_status_text));
+                mContentText.setText(R.string.server_status_text);
                 Intent intent = new Intent(Config.this, SMSService.class);
 
                 Config.this.startService(intent);
